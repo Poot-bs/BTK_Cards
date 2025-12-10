@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { adminAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -76,6 +77,7 @@ const AdminDashboard = () => {
       formData.append('backgroundColor', editingCard.backgroundColor || '#ffffff');
       formData.append('textColor', editingCard.textColor || '#000000');
       formData.append('buttonColor', editingCard.buttonColor || '#3b82f6');
+      formData.append('fontFamily', editingCard.fontFamily || 'Inter');
       if (editingCard._newImageFile) {
         formData.append('image', editingCard._newImageFile);
       }
@@ -93,6 +95,12 @@ const AdminDashboard = () => {
       setEditLoading(false);
     }
   };
+
+  // Prepare chart data
+  const chartData = cards.slice(0, 10).map(card => ({
+    name: card.title.substring(0, 10) + '...',
+    views: card.views
+  }));
 
   if (loading) {
     return (
@@ -122,47 +130,66 @@ const AdminDashboard = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+            className="space-y-8"
           >
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <span className="text-2xl">📊</span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center">
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm text-gray-600">Total Cards</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {stats.totalCards}
+                    </p>
+                  </div>
                 </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-600">Total Cards</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.totalCards}
-                  </p>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center">
+                  <div className="p-3 bg-green-100 rounded-lg">
+                    <span className="text-2xl">👥</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm text-gray-600">Total Users</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {stats.totalUsers}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center">
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <span className="text-2xl">👀</span>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm text-gray-600">Total Views</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {stats.totalViews}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Chart Section */}
             <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <span className="text-2xl">👥</span>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-600">Total Users</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.totalUsers}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <span className="text-2xl">👀</span>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm text-gray-600">Total Views</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.totalViews}
-                  </p>
-                </div>
+              <h3 className="text-lg font-semibold mb-4">Top Cards by Views</h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="views" fill="#3b82f6" name="Views" />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </motion.div>
@@ -294,6 +321,24 @@ const AdminDashboard = () => {
                     <label className="block text-sm font-medium text-gray-700">Button</label>
                     <input name="buttonColor" type="color" value={editingCard.buttonColor || '#3b82f6'} onChange={handleEditChange} />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Font Family</label>
+                  <select 
+                    name="fontFamily" 
+                    value={editingCard.fontFamily || 'Inter'} 
+                    onChange={handleEditChange}
+                    className="w-full px-3 py-2 border rounded"
+                  >
+                    <option value="Inter">Inter</option>
+                    <option value="Roboto">Roboto</option>
+                    <option value="Playfair Display">Playfair Display</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Open Sans">Open Sans</option>
+                    <option value="Lato">Lato</option>
+                    <option value="Merriweather">Merriweather</option>
+                  </select>
                 </div>
 
                 <div>

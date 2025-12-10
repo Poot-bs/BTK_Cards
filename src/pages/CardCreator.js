@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { cardAPI } from '../services/api';
 import PreviewCard from '../components/Card/PreviewCard';
+import { useToastContext } from '../components/UI/ToastProvider';
 
 const CardCreator = () => {
   const [loading, setLoading] = useState(false);
@@ -11,12 +12,13 @@ const CardCreator = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [error, setError] = useState('');
   const [sections, setSections] = useState([
-    { label: '', content: '' },
-    { label: '', content: '' }
+    { label: '', content: '', layout: 'block', fontFamily: 'Inter', italic: true },
+    { label: '', content: '', layout: 'block', fontFamily: 'Inter', italic: true }
   ]);
   const [activeTab, setActiveTab] = useState('content');
   const { register, handleSubmit, watch, formState: { errors }, setValue, trigger } = useForm();
   const navigate = useNavigate();
+  const { addToast } = useToastContext();
 
   const formData = watch();
 
@@ -32,7 +34,7 @@ const CardCreator = () => {
   };
 
   const addSection = () => {
-    setSections([...sections, { label: '', content: '' }]);
+    setSections([...sections, { label: '', content: '', layout: 'block', fontFamily: 'Inter', italic: true }]);
   };
 
   const removeSection = (idx) => {
@@ -44,7 +46,12 @@ const CardCreator = () => {
   const buildContentFromSections = () => {
     return sections
       .filter(s => s.label || s.content)
-      .map(s => `${s.label}: ${s.content}`)
+      .map(s => {
+        const layoutMarker = s.layout === 'inline' ? '|inline' : '';
+        const fontMarker = s.fontFamily && s.fontFamily !== 'Inter' ? `|font=${s.fontFamily}` : '';
+        const italicMarker = s.italic ? '|italic' : '';
+        return `${s.label}${layoutMarker}${fontMarker}${italicMarker}: ${s.content}`;
+      })
       .join('\n');
   };
 
@@ -61,6 +68,10 @@ const CardCreator = () => {
         backgroundColor: formData?.backgroundColor || '#ffffff',
         textColor: formData?.textColor || '#1a202c',
         buttonColor: formData?.buttonColor || '#1b5e4f',
+        fontFamily: formData?.fontFamily || 'Inter',
+        titleFont: formData?.titleFont || 'Inter',
+        subtitleFont: formData?.subtitleFont || 'Inter',
+        titleLayout: formData?.titleLayout || 'inline',
         shortCode: 'preview',
         views: 0
       });
@@ -97,6 +108,9 @@ const CardCreator = () => {
         backgroundColor: data.backgroundColor,
         textColor: data.textColor,
         buttonColor: data.buttonColor,
+        fontFamily: data.fontFamily,
+        titleFont: data.titleFont,
+        subtitleFont: data.subtitleFont,
         hasImage: !!data.image?.[0]
       });
 
@@ -107,6 +121,10 @@ const CardCreator = () => {
       formDataToSend.append('backgroundColor', data.backgroundColor || '#ffffff');
       formDataToSend.append('textColor', data.textColor || '#1a202c');
       formDataToSend.append('buttonColor', data.buttonColor || '#1b5e4f');
+      formDataToSend.append('fontFamily', data.fontFamily || 'Inter');
+      formDataToSend.append('titleFont', data.titleFont || 'Inter');
+      formDataToSend.append('subtitleFont', data.subtitleFont || 'Inter');
+      formDataToSend.append('titleLayout', data.titleLayout || 'inline');
       
       // FIX: Properly handle image file upload
       if (data.image && data.image.length > 0) {
@@ -127,10 +145,10 @@ const CardCreator = () => {
       console.log('Card created successfully:', response);
 
       // Show success message
-      alert('Creating successful...');
+      addToast('Card created successfully!', 'success');
 
       // Navigate to dashboard immediately after success
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
       
     } catch (error) {
       console.error('Error creating card:', error);
@@ -151,7 +169,7 @@ const CardCreator = () => {
       }
       
       setError(errorMessage);
-      alert(errorMessage);
+      addToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -210,6 +228,16 @@ const CardCreator = () => {
       { name: 'Purple', color: '#9333ea' }
     ]
   };
+
+  const fontOptions = [
+    { name: 'Inter (Modern)', value: 'Inter' },
+    { name: 'Roboto (Clean)', value: 'Roboto' },
+    { name: 'Playfair Display (Elegant)', value: 'Playfair Display' },
+    { name: 'Montserrat (Bold)', value: 'Montserrat' },
+    { name: 'Open Sans (Friendly)', value: 'Open Sans' },
+    { name: 'Lato (Neutral)', value: 'Lato' },
+    { name: 'Merriweather (Classic)', value: 'Merriweather' },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-cyan-50 dark:from-gray-900 dark:via-teal-950 dark:to-blue-900 py-8">
@@ -338,33 +366,77 @@ const CardCreator = () => {
                             key={idx}
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="flex gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-600"
+                            className="flex flex-col gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-600"
                           >
-                            <input
-                              type="text"
-                              placeholder="Label (e.g., RÉGION)"
-                              value={section.label}
-                              onChange={(e) => handleSectionChange(idx, 'label', e.target.value)}
-                              className="flex-1 px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                            />
-                            <input
-                              type="text"
-                              placeholder="Content"
-                              value={section.content}
-                              onChange={(e) => handleSectionChange(idx, 'content', e.target.value)}
-                              className="flex-1 px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                            />
-                            {sections.length > 1 && (
-                              <motion.button
-                                type="button"
-                                onClick={() => removeSection(idx)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
-                              >
-                                Remove
-                              </motion.button>
-                            )}
+                            <div className="flex gap-3">
+                              <input
+                                type="text"
+                                placeholder="Label (e.g., RÉGION)"
+                                value={section.label}
+                                onChange={(e) => handleSectionChange(idx, 'label', e.target.value)}
+                                className="flex-1 px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                              />
+                              <input
+                                type="text"
+                                placeholder="Content"
+                                value={section.content}
+                                onChange={(e) => handleSectionChange(idx, 'content', e.target.value)}
+                                className="flex-1 px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                              />
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name={`layout-${idx}`}
+                                    checked={section.layout !== 'inline'}
+                                    onChange={() => handleSectionChange(idx, 'layout', 'block')}
+                                    className="text-teal-600 focus:ring-teal-500"
+                                  />
+                                  Block (Below)
+                                </label>
+                                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
+                                  <input
+                                    type="radio"
+                                    name={`layout-${idx}`}
+                                    checked={section.layout === 'inline'}
+                                    onChange={() => handleSectionChange(idx, 'layout', 'inline')}
+                                    className="text-teal-600 focus:ring-teal-500"
+                                  />
+                                  Inline (Same Line)
+                                </label>
+                                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer ml-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={section.italic !== false}
+                                    onChange={(e) => handleSectionChange(idx, 'italic', e.target.checked)}
+                                    className="text-teal-600 focus:ring-teal-500 rounded"
+                                  />
+                                  Italic
+                                </label>
+                                <select
+                                  value={section.fontFamily || 'Inter'}
+                                  onChange={(e) => handleSectionChange(idx, 'fontFamily', e.target.value)}
+                                  className="px-2 py-1 text-sm border rounded bg-white dark:bg-gray-600 dark:text-white dark:border-gray-500"
+                                >
+                                  {fontOptions.map(font => (
+                                    <option key={font.value} value={font.value}>{font.name}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              {sections.length > 1 && (
+                                <motion.button
+                                  type="button"
+                                  onClick={() => removeSection(idx)}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  className="px-4 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors font-medium"
+                                >
+                                  Remove
+                                </motion.button>
+                              )}
+                            </div>
                           </motion.div>
                         ))}
                       </div>
@@ -388,11 +460,83 @@ const CardCreator = () => {
                   <div className={activeTab !== 'design' ? 'hidden' : 'space-y-8'}>
                     <div className="text-center mb-6">
                       <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                        🎨 Color Customization
+                        🎨 Color & Typography
                       </h3>
                       <p className="text-gray-600 dark:text-gray-400">
-                        Choose from our <span className="font-semibold text-teal-600">ITACOSPECIALTY</span> palette
+                        Customize the look and feel of your card
                       </p>
+                    </div>
+
+                    {/* Font Selection */}
+                    <div>
+                      <label className="block text-lg font-bold text-gray-900 dark:text-white mb-4">
+                        Global Typography
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        {fontOptions.map((font) => (
+                          <label
+                            key={font.value}
+                            className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                              watch('fontFamily') === font.value
+                                ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/30'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-teal-300'
+                            }`}
+                          >
+                            <span style={{ fontFamily: font.value }} className="text-lg">
+                              {font.name}
+                            </span>
+                            <input
+                              {...register('fontFamily')}
+                              type="radio"
+                              value={font.value}
+                              className="w-5 h-5 text-teal-600 focus:ring-teal-500"
+                            />
+                          </label>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Title Font
+                          </label>
+                          <select
+                            {...register('titleFont')}
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
+                          >
+                            <option value="">Same as Global</option>
+                            {fontOptions.map(font => (
+                              <option key={font.value} value={font.value}>{font.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Subtitle Font
+                          </label>
+                          <select
+                            {...register('subtitleFont')}
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
+                          >
+                            <option value="">Same as Global</option>
+                            {fontOptions.map(font => (
+                              <option key={font.value} value={font.value}>{font.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Title Layout
+                          </label>
+                          <select
+                            {...register('titleLayout')}
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
+                          >
+                            <option value="inline">Inline (Title + Subtitle)</option>
+                            <option value="stacked">Stacked (Subtitle below)</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Background Color */}

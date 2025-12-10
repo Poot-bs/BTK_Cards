@@ -35,11 +35,40 @@ const PreviewCard = ({
 
     lines.forEach((line) => {
       if (line.includes(':')) {
-        const [label, ...rest] = line.split(':');
+        const [labelPart, ...rest] = line.split(':');
+        let label = labelPart.trim();
+        let layout = 'block';
+        let fontFamily = null;
+        let italic = false;
+
+        // Check for layout marker
+        if (label.includes('|inline')) {
+          label = label.replace('|inline', '');
+          layout = 'inline';
+        }
+
+        // Check for font marker
+        if (label.includes('|font=')) {
+          const fontMatch = label.match(/\|font=([^|]+)/);
+          if (fontMatch) {
+            fontFamily = fontMatch[1];
+            label = label.replace(fontMatch[0], '');
+          }
+        }
+
+        // Check for italic marker
+        if (label.includes('|italic')) {
+          label = label.replace('|italic', '');
+          italic = true;
+        }
+
         if (currentSection) sections.push(currentSection);
         currentSection = {
           label: label.trim(),
-          content: rest.join(':').trim()
+          content: rest.join(':').trim(),
+          layout,
+          fontFamily,
+          italic
         };
       } else if (currentSection) {
         currentSection.content += ' ' + line.trim();
@@ -60,7 +89,8 @@ const PreviewCard = ({
         className="rounded-2xl shadow-2xl overflow-hidden"
         style={{ 
           backgroundColor: card.backgroundColor || '#ffffff',
-          color: card.textColor || '#1a202c'
+          color: card.textColor || '#1a202c',
+          fontFamily: card.fontFamily || 'Inter, sans-serif'
         }}
       >
         {/* Image Section */}
@@ -80,16 +110,34 @@ const PreviewCard = ({
           <div>
             <h2 
               className="text-3xl font-black uppercase tracking-tight leading-tight"
-              style={{ color: card.textColor || '#1a202c' }}
+              style={{ 
+                color: card.textColor || '#1a202c',
+                fontFamily: card.titleFont || 'inherit'
+              }}
             >
               {card.title}
               {card.subtitle && (
-                <span 
-                  className="ml-2 font-black"
-                  style={{ color: card.buttonColor || '#f59e0b' }}
-                >
-                  {card.subtitle}
-                </span>
+                card.titleLayout === 'stacked' ? (
+                  <div 
+                    className="mt-1 text-xl font-black"
+                    style={{ 
+                      color: card.buttonColor || '#f59e0b',
+                      fontFamily: card.subtitleFont || 'inherit'
+                    }}
+                  >
+                    {card.subtitle}
+                  </div>
+                ) : (
+                  <span 
+                    className="ml-2 font-black"
+                    style={{ 
+                      color: card.buttonColor || '#f59e0b',
+                      fontFamily: card.subtitleFont || 'inherit'
+                    }}
+                  >
+                    {card.subtitle}
+                  </span>
+                )
               )}
             </h2>
           </div>
@@ -97,18 +145,18 @@ const PreviewCard = ({
           {/* Details Sections */}
           <div className="space-y-4">
             {contentData.sections.map((section, idx) => (
-              <div key={idx} className="space-y-1">
+              <div key={idx} className="space-y-1" style={{ fontFamily: section.fontFamily || 'inherit' }}>
                 <div className="flex items-start gap-2">
                   <span className="text-lg">🍃</span>
-                  <div>
+                  <div className={section.layout === 'inline' ? 'flex flex-wrap gap-2 items-baseline' : ''}>
                     <p 
                       className="text-sm font-bold uppercase tracking-wider"
                       style={{ color: card.textColor || '#1a202c' }}
                     >
-                      {section.label}
+                      {section.label}{section.layout === 'inline' ? ':' : ''}
                     </p>
                     <p 
-                      className="text-sm italic"
+                      className={`text-sm ${section.italic ? 'italic' : ''}`}
                       style={{ 
                         color: card.textColor || '#1a202c',
                         opacity: 0.9

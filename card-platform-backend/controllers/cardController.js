@@ -1,26 +1,22 @@
 const Card = require('../models/Card');
 const shortid = require('shortid');
-
-// Helper function to format card response
-const formatCardResponse = (card, req) => {
-  const cardObj = card.toObject ? card.toObject() : card;
-  
-  // If imageUrl is a relative path, convert to absolute URL
-  if (cardObj.imageUrl && cardObj.imageUrl.startsWith('/uploads/')) {
-    cardObj.imageUrl = `${req.protocol}://${req.get('host')}${cardObj.imageUrl}`;
-  }
-  
-  return cardObj;
-};
+const { uploadImage, deleteImage, isSupabaseUrl } = require('../services/supabaseStorage');
 
 // Create new card
 exports.createCard = async (req, res) => {
   try {
-    const { title, content, backgroundColor, textColor, buttonColor } = req.body;
+    const { title, content, backgroundColor, textColor, buttonColor, fontFamily, titleFont, subtitleFont, titleLayout } = req.body;
     
     let imageUrl = '';
     if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
+      // Upload to Supabase Storage
+      const uploadResult = await uploadImage(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        req.user._id.toString()
+      );
+      imageUrl = uploadResult.url;
     }
 
     const card = new Card({
@@ -30,6 +26,10 @@ exports.createCard = async (req, res) => {
       backgroundColor,
       textColor,
       buttonColor,
+      fontFamily: fontFamily || 'Inter',
+      titleFont: titleFont || 'Inter',
+      subtitleFont: subtitleFont || 'Inter',
+      titleLayout: titleLayout || 'inline',
       createdBy: req.user._id,
       shortCode: shortid.generate()
     });
@@ -37,10 +37,9 @@ exports.createCard = async (req, res) => {
     await card.save();
     await card.populate('createdBy', 'username email');
 
-    const formattedCard = formatCardResponse(card, req);
     res.status(201).json({
       message: 'Card created successfully',
-      card: formattedCard
+      card: card.toObject()
     });
   } catch (error) {
     res.status(500).json({
@@ -66,8 +65,7 @@ exports.getCardByShortCode = async (req, res) => {
     card.views += 1;
     await card.save();
 
-    const formattedCard = formatCardResponse(card, req);
-    res.json({ card: formattedCard });
+    res.json({ card: card.toObject() });
   } catch (error) {
     res.status(500).json({
       message: 'Error fetching card',
@@ -98,12 +96,6 @@ exports.updateCard = async (req, res) => {
     const { id } = req.params;
     const updates = req.body;
 
-    let imageUrl;
-    if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
-      updates.imageUrl = imageUrl;
-    }
-
     const card = await Card.findOne({
       _id: id,
       $or: [
@@ -116,6 +108,23 @@ exports.updateCard = async (req, res) => {
       return res.status(404).json({ message: 'Card not found or access denied' });
     }
 
+    // Handle image upload to Supabase
+    if (req.file) {
+      // Delete old image from Supabase if it exists
+      if (card.imageUrl && isSupabaseUrl(card.imageUrl)) {
+        await deleteImage(card.imageUrl);
+      }
+
+      // Upload new image to Supabase
+      const uploadResult = await uploadImage(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        req.user._id.toString()
+      );
+      updates.imageUrl = uploadResult.url;
+    }
+
     Object.keys(updates).forEach(key => {
       if (updates[key] !== undefined) {
         card[key] = updates[key];
@@ -125,15 +134,9 @@ exports.updateCard = async (req, res) => {
     await card.save();
     await card.populate('createdBy', 'username email');
 
-    // Format imageUrl to absolute URL so frontend can display it
-    const cardObj = card.toObject ? card.toObject() : card;
-    if (cardObj.imageUrl && cardObj.imageUrl.startsWith('/uploads/')) {
-      cardObj.imageUrl = `${req.protocol}://${req.get('host')}${cardObj.imageUrl}`;
-    }
-
     res.json({
       message: 'Card updated successfully',
-      card: cardObj
+      card: card.toObject()
     });
   } catch (error) {
     res.status(500).json({
@@ -158,6 +161,11 @@ exports.deleteCard = async (req, res) => {
 
     if (!card) {
       return res.status(404).json({ message: 'Card not found or access denied' });
+    }
+
+    // Delete image from Supabase if it exists
+    if (card.imageUrl && isSupabaseUrl(card.imageUrl)) {
+      await deleteImage(card.imageUrl);
     }
 
     await Card.findByIdAndDelete(id);

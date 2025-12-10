@@ -1,17 +1,7 @@
 const multer = require('multer');
-const path = require('path');
 
-// Configure storage with absolute path
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads');
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Use memory storage instead of disk storage for Supabase uploads
+const storage = multer.memoryStorage();
 
 // File filter
 const fileFilter = (req, file, cb) => {

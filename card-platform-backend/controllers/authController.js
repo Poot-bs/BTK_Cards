@@ -124,16 +124,46 @@ exports.getMe = async (req, res) => {
 // Update user profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, bio } = req.body;
+    const { username, email, bio } = req.body;
     const updateData = {
-      name,
       bio
     };
 
+    // Check if username/email is being updated and if it's unique
+    if (username) {
+      const existingUser = await User.findOne({ username, _id: { $ne: req.user._id } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Username already taken' });
+      }
+      updateData.username = username;
+    }
+
+    if (email) {
+      const existingUser = await User.findOne({ email, _id: { $ne: req.user._id } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Email already taken' });
+      }
+      updateData.email = email;
+    }
+
     // Handle avatar upload
     if (req.file) {
-      // Store file path - adjust based on your file upload setup
-      updateData.avatar = `/uploads/${req.file.filename}`;
+      // Upload to Supabase Storage
+      const { uploadImage, deleteImage, isSupabaseUrl } = require('../services/supabaseStorage');
+      
+      // Get current user to check for old avatar
+      const currentUser = await User.findById(req.user._id);
+      if (currentUser.avatar && isSupabaseUrl(currentUser.avatar)) {
+        await deleteImage(currentUser.avatar);
+      }
+
+      const uploadResult = await uploadImage(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        req.user._id.toString()
+      );
+      updateData.avatar = uploadResult.url;
     }
 
     const user = await User.findByIdAndUpdate(

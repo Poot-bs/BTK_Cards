@@ -44,6 +44,23 @@ const cardSchema = new mongoose.Schema({
     type: String,
     default: '#3b82f6'
   },
+  fontFamily: {
+    type: String,
+    default: 'Inter'
+  },
+  titleFont: {
+    type: String,
+    default: 'Inter'
+  },
+  subtitleFont: {
+    type: String,
+    default: 'Inter'
+  },
+  titleLayout: {
+    type: String,
+    enum: ['inline', 'stacked'],
+    default: 'inline'
+  },
   isActive: {
     type: Boolean,
     default: true
