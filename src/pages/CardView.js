@@ -70,7 +70,7 @@ const CardView = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-2 sm:p-4">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-2 sm:p-4 pt-8 sm:pt-12">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 opacity-50"></div>
       
