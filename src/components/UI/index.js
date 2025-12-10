@@ -124,16 +124,42 @@ export const Toast = ({ message, type = 'success', onClose }) => {
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  const colors = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    warning: 'bg-yellow-500',
-    info: 'bg-blue-500'
+  const styles = {
+    success: {
+      bg: 'bg-white dark:bg-gray-800',
+      border: 'border-l-4 border-green-500',
+      icon: '✅',
+      text: 'text-gray-800 dark:text-white'
+    },
+    error: {
+      bg: 'bg-white dark:bg-gray-800',
+      border: 'border-l-4 border-red-500',
+      icon: '❌',
+      text: 'text-gray-800 dark:text-white'
+    },
+    warning: {
+      bg: 'bg-white dark:bg-gray-800',
+      border: 'border-l-4 border-yellow-500',
+      icon: '⚠️',
+      text: 'text-gray-800 dark:text-white'
+    },
+    info: {
+      bg: 'bg-white dark:bg-gray-800',
+      border: 'border-l-4 border-blue-500',
+      icon: 'ℹ️',
+      text: 'text-gray-800 dark:text-white'
+    }
   };
 
+  const style = styles[type];
+
   return (
-    <div className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white shadow-lg ${colors[type]} z-50 animate-pulse`}>
-      {message}
+    <div className={`flex items-center gap-3 px-6 py-4 rounded-lg shadow-2xl ${style.bg} ${style.border} transform transition-all duration-500 hover:scale-105 z-50 min-w-[300px]`}>
+      <span className="text-xl">{style.icon}</span>
+      <p className={`font-medium ${style.text}`}>{message}</p>
+      <button onClick={onClose} className="ml-auto text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+        ×
+      </button>
     </div>
   );
 };

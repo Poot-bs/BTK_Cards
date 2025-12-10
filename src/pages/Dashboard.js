@@ -21,6 +21,7 @@ const Dashboard = () => {
   const [deleteModalCard, setDeleteModalCard] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('newest');
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const qrRef = useRef(null);
   const { user } = useAuth();
   const { addToast } = useToastContext();
@@ -96,7 +97,15 @@ const Dashboard = () => {
         content: editingCard.content,
         backgroundColor: editingCard.backgroundColor,
         textColor: editingCard.textColor,
-        buttonColor: editingCard.buttonColor
+        buttonColor: editingCard.buttonColor,
+        fontFamily: editingCard.fontFamily,
+        titleFont: editingCard.titleFont,
+        subtitleFont: editingCard.subtitleFont,
+        titleLayout: editingCard.titleLayout,
+        titleLines: editingCard.titleLines,
+        titleBold: editingCard.titleBold,
+        subtitleSize: editingCard.subtitleSize,
+        subtitleBold: editingCard.subtitleBold
       });
 
       // Update the card in the local state
@@ -167,29 +176,25 @@ const Dashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-4 sm:mb-6">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-teal-700 to-blue-700 dark:from-teal-400 dark:to-blue-300 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-teal-700 to-blue-700 dark:from-teal-400 dark:to-blue-300 bg-clip-text text-transparent">
                 My Digital Cards
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">
+              <p className="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base md:text-lg">
                 Manage and track your digital business cards
               </p>
             </div>
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="w-full sm:w-auto"
             >
               <button
-                onClick={() => {
-                  const confirmed = window.confirm('Ready to create a stunning digital card? This will take you to the card creator where you can design and customize your card.');
-                  if (confirmed) {
-                    window.location.href = '/create';
-                  }
-                }}
-                className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+                onClick={() => setShowCreateModal(true)}
+                className="w-full sm:w-auto bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base"
               >
                 <span className="text-lg">+</span>
                 Create New Card
@@ -202,7 +207,7 @@ const Dashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6"
           >
             <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-teal-200/50 dark:border-teal-700/50">
               <div className="flex items-center gap-3">
@@ -228,14 +233,14 @@ const Dashboard = () => {
               </div>
             </div>
             
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-purple-200/50 dark:border-purple-700/50">
+            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-purple-200/50 dark:border-purple-700/50 overflow-hidden">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-lg flex-shrink-0 flex items-center justify-center">
                   <span className="text-purple-600 dark:text-purple-400 text-lg">🔥</span>
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="text-sm text-gray-600 dark:text-gray-400">Most Viewed</p>
-                  <p className="text-lg font-bold text-purple-700 dark:text-purple-300 truncate">
+                  <p className="text-lg font-bold text-purple-700 dark:text-purple-300 truncate" title={cardStats.mostViewed?.title || 'N/A'}>
                     {cardStats.mostViewed?.title || 'N/A'}
                   </p>
                 </div>
@@ -447,12 +452,12 @@ const Dashboard = () => {
                             Card Title *
                           </span>
                         </label>
-                        <input
-                          type="text"
+                        <textarea
                           value={editingCard.title || ''}
                           onChange={(e) => setEditingCard({...editingCard, title: e.target.value})}
+                          rows={2}
                           className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-teal-200 dark:border-teal-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                          placeholder="e.g., STAMAYA ESPERANZA"
+                          placeholder="e.g., STAMAYA ESPERANZA (Press Enter for new line)"
                           required
                         />
                       </div>
@@ -465,13 +470,131 @@ const Dashboard = () => {
                             Subtitle (Accent Color)
                           </span>
                         </label>
-                        <input
-                          type="text"
+                        <textarea
                           value={editingCard.subtitle || ''}
                           onChange={(e) => setEditingCard({...editingCard, subtitle: e.target.value})}
+                          rows={2}
                           className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-amber-200 dark:border-amber-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                          placeholder="e.g., SIGNATURE BLEND (will use accent color)"
+                          placeholder="e.g., SIGNATURE BLEND (Press Enter for new line)"
                         />
+                      </div>
+
+                      {/* Title & Subtitle Layout Controls */}
+                      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 space-y-4">
+                        <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                          <span>⚙️</span> Title & Subtitle Options
+                        </h4>
+                        
+                        {/* Layout - Same line or below */}
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Subtitle Position
+                          </label>
+                          <select
+                            value={editingCard.titleLayout || 'inline'}
+                            onChange={(e) => setEditingCard({...editingCard, titleLayout: e.target.value})}
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white"
+                          >
+                            <option value="inline">Same Line (Title + Subtitle)</option>
+                            <option value="stacked">Below Title (Stacked)</option>
+                          </select>
+                        </div>
+
+                        {/* Title Size */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                              Title Size
+                            </label>
+                            <select
+                              value={editingCard.titleLines || '3'}
+                              onChange={(e) => setEditingCard({...editingCard, titleLines: e.target.value})}
+                              className="w-full px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white"
+                            >
+                              <option value="1">Large</option>
+                              <option value="2">Medium</option>
+                              <option value="3">Small</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                              Subtitle Size
+                            </label>
+                            <select
+                              value={editingCard.subtitleSize || 'xl'}
+                              onChange={(e) => setEditingCard({...editingCard, subtitleSize: e.target.value})}
+                              className="w-full px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white"
+                            >
+                              <option value="xl">Large</option>
+                              <option value="lg">Medium</option>
+                              <option value="base">Small</option>
+                            </select>
+                          </div>
+                        </div>
+
+                        {/* Bold Options */}
+                        <div className="flex gap-6">
+                          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={editingCard.titleBold !== false}
+                              onChange={(e) => setEditingCard({...editingCard, titleBold: e.target.checked})}
+                              className="w-4 h-4 text-teal-600 focus:ring-teal-500 rounded"
+                            />
+                            Title Bold
+                          </label>
+                          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={editingCard.subtitleBold !== false}
+                              onChange={(e) => setEditingCard({...editingCard, subtitleBold: e.target.checked})}
+                              className="w-4 h-4 text-amber-600 focus:ring-amber-500 rounded"
+                            />
+                            Subtitle Bold
+                          </label>
+                        </div>
+
+                        {/* Font Options */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                              Title Font
+                            </label>
+                            <select
+                              value={editingCard.titleFont || 'Inter'}
+                              onChange={(e) => setEditingCard({...editingCard, titleFont: e.target.value})}
+                              className="w-full px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white"
+                            >
+                              <option value="Inter">Inter</option>
+                              <option value="Playfair Display">Playfair Display</option>
+                              <option value="Roboto">Roboto</option>
+                              <option value="Montserrat">Montserrat</option>
+                              <option value="Lato">Lato</option>
+                              <option value="Open Sans">Open Sans</option>
+                              <option value="Oswald">Oswald</option>
+                              <option value="Raleway">Raleway</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                              Subtitle Font
+                            </label>
+                            <select
+                              value={editingCard.subtitleFont || 'Inter'}
+                              onChange={(e) => setEditingCard({...editingCard, subtitleFont: e.target.value})}
+                              className="w-full px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white"
+                            >
+                              <option value="Inter">Inter</option>
+                              <option value="Playfair Display">Playfair Display</option>
+                              <option value="Roboto">Roboto</option>
+                              <option value="Montserrat">Montserrat</option>
+                              <option value="Lato">Lato</option>
+                              <option value="Open Sans">Open Sans</option>
+                              <option value="Oswald">Oswald</option>
+                              <option value="Raleway">Raleway</option>
+                            </select>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Content */}
@@ -579,6 +702,146 @@ const Dashboard = () => {
                         </motion.button>
                       </div>
                     </form>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Create Card Modal */}
+            <AnimatePresence>
+              {showCreateModal && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                >
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.6 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-gradient-to-br from-teal-900 via-black to-blue-900"
+                    onClick={() => setShowCreateModal(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: 50 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden"
+                  >
+                    {/* Decorative Header */}
+                    <div className="relative h-48 bg-gradient-to-br from-teal-500 via-teal-600 to-blue-600 overflow-hidden">
+                      {/* Animated Background Shapes */}
+                      <motion.div
+                        animate={{ 
+                          rotate: [0, 360],
+                          scale: [1, 1.2, 1]
+                        }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute -top-20 -right-20 w-64 h-64 bg-white/10 rounded-full"
+                      />
+                      <motion.div
+                        animate={{ 
+                          rotate: [360, 0],
+                          scale: [1, 1.3, 1]
+                        }}
+                        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+                        className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full"
+                      />
+                      <motion.div
+                        animate={{ y: [0, -10, 0] }}
+                        transition={{ duration: 3, repeat: Infinity }}
+                        className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center"
+                      >
+                        <div className="text-7xl mb-2">✨</div>
+                        <h2 className="text-white text-2xl font-bold drop-shadow-lg">Create Magic</h2>
+                      </motion.div>
+                      
+                      {/* Floating Card Icons */}
+                      <motion.div
+                        animate={{ y: [0, -15, 0], x: [0, 5, 0] }}
+                        transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
+                        className="absolute top-8 left-8 text-4xl opacity-60"
+                      >
+                        🎴
+                      </motion.div>
+                      <motion.div
+                        animate={{ y: [0, -10, 0], x: [0, -5, 0] }}
+                        transition={{ duration: 3.5, repeat: Infinity, delay: 1 }}
+                        className="absolute top-12 right-12 text-3xl opacity-60"
+                      >
+                        💫
+                      </motion.div>
+                      <motion.div
+                        animate={{ y: [0, -12, 0] }}
+                        transition={{ duration: 3, repeat: Infinity, delay: 0.2 }}
+                        className="absolute bottom-8 right-8 text-3xl opacity-60"
+                      >
+                        🎨
+                      </motion.div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-8">
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 text-center">
+                        Ready to Create Something Amazing?
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-300 text-center mb-6 leading-relaxed">
+                        Design your own stunning digital card with custom colors, fonts, images, and more. Your creativity, your style!
+                      </p>
+
+                      {/* Features List */}
+                      <div className="grid grid-cols-2 gap-3 mb-8">
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                          <span className="w-8 h-8 bg-teal-100 dark:bg-teal-900/50 rounded-lg flex items-center justify-center text-teal-600 dark:text-teal-400">🖼️</span>
+                          <span>Custom Images</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                          <span className="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400">🎨</span>
+                          <span>Beautiful Colors</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                          <span className="w-8 h-8 bg-purple-100 dark:bg-purple-900/50 rounded-lg flex items-center justify-center text-purple-600 dark:text-purple-400">✍️</span>
+                          <span>Custom Fonts</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                          <span className="w-8 h-8 bg-amber-100 dark:bg-amber-900/50 rounded-lg flex items-center justify-center text-amber-600 dark:text-amber-400">📱</span>
+                          <span>QR Code Sharing</span>
+                        </div>
+                      </div>
+
+                      {/* Buttons */}
+                      <div className="flex gap-4">
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => setShowCreateModal(false)}
+                          className="flex-1 py-3 px-6 rounded-xl border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300"
+                        >
+                          Maybe Later
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(13, 148, 136, 0.3)" }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => window.location.href = '/create'}
+                          className="flex-1 py-3 px-6 rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-600 hover:to-teal-700 text-white font-bold shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+                        >
+                          <span>🚀</span>
+                          Let's Create!
+                        </motion.button>
+                      </div>
+                    </div>
+
+                    {/* Close Button */}
+                    <button
+                      onClick={() => setShowCreateModal(false)}
+                      className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-all duration-300"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </motion.div>
                 </motion.div>
               )}

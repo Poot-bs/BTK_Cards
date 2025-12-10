@@ -60,3 +60,60 @@ code {
   transform: translateY(-5px);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
+
+/* Mobile-specific improvements */
+@media (max-width: 640px) {
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-size: 16px;
+  }
+  
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Prevent horizontal scroll */
+  .max-w-7xl,
+  .max-w-xl,
+  .max-w-lg,
+  .max-w-md {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Better touch targets */
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+  
+  /* Smoother scrolling on iOS */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Tablet improvements */
+@media (min-width: 641px) and (max-width: 1024px) {
+  html {
+    font-size: 15px;
+  }
+}
+
+/* Prevent text selection on buttons */
+button {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}

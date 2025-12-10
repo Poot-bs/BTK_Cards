@@ -6,12 +6,17 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    maxlength: 100
+    maxlength: 500
+  },
+  subtitle: {
+    type: String,
+    default: '',
+    maxlength: 500
   },
   content: {
     type: String,
     required: true,
-    maxlength: 1000
+    maxlength: 5000
   },
   imageUrl: {
     type: String,
@@ -60,6 +65,47 @@ const cardSchema = new mongoose.Schema({
     type: String,
     enum: ['inline', 'stacked'],
     default: 'inline'
+  },
+  titleLines: {
+    type: String,
+    default: '3'
+  },
+  titleBold: {
+    type: Boolean,
+    default: true
+  },
+  subtitleSize: {
+    type: String,
+    default: 'xl'
+  },
+  subtitleBold: {
+    type: Boolean,
+    default: true
+  },
+  description: {
+    type: String,
+    default: '',
+    maxlength: 2000
+  },
+  descriptionFont: {
+    type: String,
+    default: 'Inter'
+  },
+  descriptionSize: {
+    type: String,
+    default: 'base'
+  },
+  descriptionColor: {
+    type: String,
+    default: '#000000'
+  },
+  descriptionAlign: {
+    type: String,
+    default: 'left'
+  },
+  descriptionBold: {
+    type: Boolean,
+    default: false
   },
   isActive: {
     type: Boolean,

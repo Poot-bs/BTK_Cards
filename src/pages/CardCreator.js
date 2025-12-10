@@ -12,8 +12,8 @@ const CardCreator = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [error, setError] = useState('');
   const [sections, setSections] = useState([
-    { label: '', content: '', layout: 'block', fontFamily: 'Inter', italic: true },
-    { label: '', content: '', layout: 'block', fontFamily: 'Inter', italic: true }
+    { id: 's1', label: '', content: '', layout: 'block', fontFamily: 'Inter', italic: true, bold: false, fontSize: 'base' },
+    { id: 's2', label: '', content: '', layout: 'block', fontFamily: 'Inter', italic: true, bold: false, fontSize: 'base' }
   ]);
   const [activeTab, setActiveTab] = useState('content');
   const { register, handleSubmit, watch, formState: { errors }, setValue, trigger } = useForm();
@@ -24,22 +24,27 @@ const CardCreator = () => {
 
   // Update preview whenever form data changes
   useEffect(() => {
-    updatePreview();
+    const timer = setTimeout(() => {
+      updatePreview();
+    }, 300);
+    return () => clearTimeout(timer);
   }, [formData, sections, imagePreview]);
 
-  const handleSectionChange = (idx, field, value) => {
-    const newSections = [...sections];
-    newSections[idx][field] = value;
-    setSections(newSections);
+  const handleSectionChange = (id, field, value) => {
+    setSections(prevSections => 
+      prevSections.map(section => 
+        section.id === id ? { ...section, [field]: value } : section
+      )
+    );
   };
 
   const addSection = () => {
-    setSections([...sections, { label: '', content: '', layout: 'block', fontFamily: 'Inter', italic: true }]);
+    setSections([...sections, { id: `s${Date.now()}`, label: '', content: '', layout: 'block', fontFamily: 'Inter', italic: true, bold: false, fontSize: 'base' }]);
   };
 
-  const removeSection = (idx) => {
+  const removeSection = (id) => {
     if (sections.length > 1) {
-      setSections(sections.filter((_, i) => i !== idx));
+      setSections(sections.filter(section => section.id !== id));
     }
   };
 
@@ -49,8 +54,10 @@ const CardCreator = () => {
       .map(s => {
         const layoutMarker = s.layout === 'inline' ? '|inline' : '';
         const fontMarker = s.fontFamily && s.fontFamily !== 'Inter' ? `|font=${s.fontFamily}` : '';
+        const sizeMarker = s.fontSize && s.fontSize !== 'base' ? `|size=${s.fontSize}` : '';
         const italicMarker = s.italic ? '|italic' : '';
-        return `${s.label}${layoutMarker}${fontMarker}${italicMarker}: ${s.content}`;
+        const boldMarker = s.bold ? '|bold' : '';
+        return `${s.label}${layoutMarker}${fontMarker}${sizeMarker}${italicMarker}${boldMarker}: ${s.content}`;
       })
       .join('\n');
   };
@@ -72,6 +79,16 @@ const CardCreator = () => {
         titleFont: formData?.titleFont || 'Inter',
         subtitleFont: formData?.subtitleFont || 'Inter',
         titleLayout: formData?.titleLayout || 'inline',
+        titleLines: formData?.titleLines || '3',
+        titleBold: formData?.titleBold,
+        subtitleSize: formData?.subtitleSize || 'xl',
+        subtitleBold: formData?.subtitleBold,
+        description: formData?.description || '',
+        descriptionFont: formData?.descriptionFont || 'Inter',
+        descriptionSize: formData?.descriptionSize || 'base',
+        descriptionColor: formData?.descriptionColor || formData?.textColor || '#000000',
+        descriptionAlign: formData?.descriptionAlign || 'left',
+        descriptionBold: formData?.descriptionBold,
         shortCode: 'preview',
         views: 0
       });
@@ -125,6 +142,16 @@ const CardCreator = () => {
       formDataToSend.append('titleFont', data.titleFont || 'Inter');
       formDataToSend.append('subtitleFont', data.subtitleFont || 'Inter');
       formDataToSend.append('titleLayout', data.titleLayout || 'inline');
+      formDataToSend.append('titleLines', data.titleLines || '3');
+      formDataToSend.append('titleBold', data.titleBold || false);
+      formDataToSend.append('subtitleSize', data.subtitleSize || 'xl');
+      formDataToSend.append('subtitleBold', data.subtitleBold || false);
+      formDataToSend.append('description', data.description || '');
+      formDataToSend.append('descriptionFont', data.descriptionFont || 'Inter');
+      formDataToSend.append('descriptionSize', data.descriptionSize || 'base');
+      formDataToSend.append('descriptionColor', data.descriptionColor || data.textColor || '#000000');
+      formDataToSend.append('descriptionAlign', data.descriptionAlign || 'left');
+      formDataToSend.append('descriptionBold', data.descriptionBold || false);
       
       // FIX: Properly handle image file upload
       if (data.image && data.image.length > 0) {
@@ -239,17 +266,27 @@ const CardCreator = () => {
     { name: 'Merriweather (Classic)', value: 'Merriweather' },
   ];
 
+  const sizeOptions = [
+    { name: 'Small', value: 'sm' },
+    { name: 'Normal', value: 'base' },
+    { name: 'Large', value: 'lg' },
+    { name: 'Extra Large', value: 'xl' },
+    { name: '2XL', value: '2xl' },
+    { name: '3XL', value: '3xl' },
+    { name: '4XL', value: '4xl' },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-cyan-50 dark:from-gray-900 dark:via-teal-950 dark:to-blue-900 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-blue-50 to-cyan-50 dark:from-gray-900 dark:via-teal-950 dark:to-blue-900 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
+          className="text-center mb-6 sm:mb-12"
         >
           <motion.h1 
-            className="text-5xl font-black bg-gradient-to-r from-teal-700 to-teal-900 dark:from-teal-400 dark:to-teal-600 bg-clip-text text-transparent mb-4"
+            className="text-3xl sm:text-4xl md:text-5xl font-black bg-gradient-to-r from-teal-700 to-teal-900 dark:from-teal-400 dark:to-teal-600 bg-clip-text text-transparent mb-2 sm:mb-4"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             transition={{ duration: 0.5 }}
@@ -257,7 +294,7 @@ const CardCreator = () => {
             Create Your Digital Card
           </motion.h1>
           <motion.p 
-            className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto"
+            className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -266,14 +303,14 @@ const CardCreator = () => {
           </motion.p>
         </motion.div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-8">
           {/* Form Section */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            className="xl:col-span-2"
+            className="xl:col-span-2 order-2 xl:order-1"
           >
-            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-teal-200/50 dark:border-teal-700/50 overflow-hidden">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl border border-teal-200/50 dark:border-teal-700/50 overflow-hidden">
               {/* Form Tabs */}
               <div className="flex border-b border-teal-100 dark:border-teal-700">
                 {['content', 'design', 'media'].map((tab) => (
@@ -281,7 +318,7 @@ const CardCreator = () => {
                     key={tab}
                     type="button"
                     onClick={() => setActiveTab(tab)}
-                    className={`flex-1 py-4 px-6 font-semibold transition-all duration-300 ${
+                    className={`flex-1 py-3 sm:py-4 px-2 sm:px-6 font-semibold text-sm sm:text-base transition-all duration-300 ${
                       activeTab === tab
                         ? 'bg-teal-600 text-white border-b-2 border-amber-400'
                         : 'text-gray-600 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/30'
@@ -292,7 +329,7 @@ const CardCreator = () => {
                 ))}
               </div>
 
-              <form onSubmit={handleFormSubmit} className="p-8">
+              <form onSubmit={handleFormSubmit} className="p-4 sm:p-6 md:p-8">
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -314,17 +351,17 @@ const CardCreator = () => {
                           Card Title *
                         </span>
                       </label>
-                      <input
+                      <textarea
                         {...register('title', {
                           required: 'Title is required',
                           maxLength: {
-                            value: 100,
-                            message: 'Title must be less than 100 characters'
+                            value: 500,
+                            message: 'Title must be less than 500 characters'
                           }
                         })}
-                        type="text"
+                        rows={2}
                         className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-teal-200 dark:border-teal-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                        placeholder="e.g., STAMAYA ESPERANZA"
+                        placeholder="e.g., GEISHA WHITE HONEY (Press Enter for new line)"
                       />
                       {errors.title && (
                         <p className="mt-2 text-sm text-red-600 dark:text-red-400">
@@ -341,15 +378,90 @@ const CardCreator = () => {
                           Subtitle (Accent Color)
                         </span>
                       </label>
-                      <input
+                      <textarea
                         {...register('subtitle')}
-                        type="text"
+                        rows={2}
                         className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-amber-200 dark:border-amber-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-300 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
-                        placeholder="e.g., SIGNATURE BLEND (will use accent color)"
+                        placeholder="e.g., SIGNATURE BLEND (Press Enter for new line)"
                       />
                       <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                         Optional: Appears after title in your chosen accent color
                       </p>
+                    </div>
+
+                    {/* Title & Subtitle Quick Controls */}
+                    <div className="bg-gradient-to-r from-teal-50 to-amber-50 dark:from-gray-700/50 dark:to-gray-700/50 rounded-xl p-4 space-y-4 border-2 border-dashed border-teal-200 dark:border-gray-600">
+                      <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                        <span>⚙️</span> Title & Subtitle Layout
+                      </h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Subtitle Position */}
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Subtitle Position
+                          </label>
+                          <select
+                            {...register('titleLayout')}
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white"
+                          >
+                            <option value="inline">Same Line as Title</option>
+                            <option value="stacked">Below Title (Stacked)</option>
+                          </select>
+                        </div>
+
+                        {/* Title Size */}
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Title Size
+                          </label>
+                          <select
+                            {...register('titleLines')}
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white"
+                          >
+                            <option value="1">Large</option>
+                            <option value="2">Medium</option>
+                            <option value="3">Small</option>
+                          </select>
+                        </div>
+
+                        {/* Subtitle Size */}
+                        <div>
+                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
+                            Subtitle Size
+                          </label>
+                          <select
+                            {...register('subtitleSize')}
+                            className="w-full px-4 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-gray-900 dark:text-white"
+                          >
+                            <option value="xl">Large (Match Title)</option>
+                            <option value="lg">Medium</option>
+                            <option value="base">Small</option>
+                          </select>
+                        </div>
+
+                        {/* Bold Options */}
+                        <div className="flex items-end gap-4 pb-1">
+                          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                            <input
+                              {...register('titleBold')}
+                              type="checkbox"
+                              defaultChecked={true}
+                              className="w-4 h-4 text-teal-600 focus:ring-teal-500 rounded"
+                            />
+                            Title Bold
+                          </label>
+                          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                            <input
+                              {...register('subtitleBold')}
+                              type="checkbox"
+                              defaultChecked={true}
+                              className="w-4 h-4 text-amber-600 focus:ring-amber-500 rounded"
+                            />
+                            Subtitle Bold
+                          </label>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Content Sections */}
@@ -362,82 +474,97 @@ const CardCreator = () => {
                       </label>
                       <div className="space-y-4 mb-4">
                         {sections.map((section, idx) => (
-                          <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="flex flex-col gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-600"
+                          <div
+                            key={section.id}
+                            className="relative flex flex-col gap-3 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-600"
                           >
+                            {sections.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeSection(section.id)}
+                                className="absolute -top-3 -right-3 p-2 bg-red-500 text-white rounded-full shadow-md hover:bg-red-600 transition-colors z-10"
+                                title="Remove Section"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              </button>
+                            )}
                             <div className="flex gap-3">
                               <input
                                 type="text"
                                 placeholder="Label (e.g., RÉGION)"
-                                value={section.label}
-                                onChange={(e) => handleSectionChange(idx, 'label', e.target.value)}
+                                value={section.label || ''}
+                                onChange={(e) => handleSectionChange(section.id, 'label', e.target.value)}
                                 className="flex-1 px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                               />
                               <input
                                 type="text"
                                 placeholder="Content"
-                                value={section.content}
-                                onChange={(e) => handleSectionChange(idx, 'content', e.target.value)}
+                                value={section.content || ''}
+                                onChange={(e) => handleSectionChange(section.id, 'content', e.target.value)}
                                 className="flex-1 px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                               />
                             </div>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center gap-4">
                                 <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
                                   <input
                                     type="radio"
-                                    name={`layout-${idx}`}
+                                    name={`layout-${section.id}`}
                                     checked={section.layout !== 'inline'}
-                                    onChange={() => handleSectionChange(idx, 'layout', 'block')}
+                                    onChange={() => handleSectionChange(section.id, 'layout', 'block')}
                                     className="text-teal-600 focus:ring-teal-500"
                                   />
-                                  Block (Below)
+                                  Block
                                 </label>
                                 <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer">
                                   <input
                                     type="radio"
-                                    name={`layout-${idx}`}
+                                    name={`layout-${section.id}`}
                                     checked={section.layout === 'inline'}
-                                    onChange={() => handleSectionChange(idx, 'layout', 'inline')}
+                                    onChange={() => handleSectionChange(section.id, 'layout', 'inline')}
                                     className="text-teal-600 focus:ring-teal-500"
                                   />
-                                  Inline (Same Line)
+                                  Inline
                                 </label>
                                 <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer ml-2">
                                   <input
                                     type="checkbox"
                                     checked={section.italic !== false}
-                                    onChange={(e) => handleSectionChange(idx, 'italic', e.target.checked)}
+                                    onChange={(e) => handleSectionChange(section.id, 'italic', e.target.checked)}
                                     className="text-teal-600 focus:ring-teal-500 rounded"
                                   />
                                   Italic
                                 </label>
+                                <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer ml-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={section.bold === true}
+                                    onChange={(e) => handleSectionChange(section.id, 'bold', e.target.checked)}
+                                    className="text-teal-600 focus:ring-teal-500 rounded"
+                                  />
+                                  Bold
+                                </label>
                                 <select
                                   value={section.fontFamily || 'Inter'}
-                                  onChange={(e) => handleSectionChange(idx, 'fontFamily', e.target.value)}
+                                  onChange={(e) => handleSectionChange(section.id, 'fontFamily', e.target.value)}
                                   className="px-2 py-1 text-sm border rounded bg-white dark:bg-gray-600 dark:text-white dark:border-gray-500"
                                 >
                                   {fontOptions.map(font => (
                                     <option key={font.value} value={font.value}>{font.name}</option>
                                   ))}
                                 </select>
-                              </div>
-                              {sections.length > 1 && (
-                                <motion.button
-                                  type="button"
-                                  onClick={() => removeSection(idx)}
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  className="px-4 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors font-medium"
+                                <select
+                                  value={section.fontSize || 'base'}
+                                  onChange={(e) => handleSectionChange(section.id, 'fontSize', e.target.value)}
+                                  className="px-2 py-1 text-sm border rounded bg-white dark:bg-gray-600 dark:text-white dark:border-gray-500"
                                 >
-                                  Remove
-                                </motion.button>
-                              )}
+                                  {sizeOptions.map(size => (
+                                    <option key={size.value} value={size.value}>{size.name}</option>
+                                  ))}
+                                </select>
                             </div>
-                          </motion.div>
+                          </div>
                         ))}
                       </div>
                       <motion.button
@@ -453,6 +580,64 @@ const CardCreator = () => {
                       <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                         Format: Each section will display as "🍃 LABEL: Content"
                       </p>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="block text-lg font-bold text-gray-900 dark:text-white mb-3">
+                        <span className="flex items-center gap-2">
+                          <span className="text-blue-600">📄</span>
+                          Description
+                        </span>
+                      </label>
+                      <textarea
+                        {...register('description')}
+                        rows={4}
+                        className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-2 border-blue-200 dark:border-blue-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-300 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                        placeholder="Add a description or bio..."
+                      />
+                      
+                      {/* Description Controls */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                        <select
+                          {...register('descriptionFont')}
+                          className="px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-sm"
+                        >
+                          {fontOptions.map(font => (
+                            <option key={font.value} value={font.value}>{font.name}</option>
+                          ))}
+                        </select>
+                        <select
+                          {...register('descriptionSize')}
+                          className="px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-sm"
+                        >
+                          {sizeOptions.map(size => (
+                            <option key={size.value} value={size.value}>{size.name}</option>
+                          ))}
+                        </select>
+                        <select
+                          {...register('descriptionAlign')}
+                          className="px-3 py-2 bg-white dark:bg-gray-600 border border-gray-300 dark:border-gray-500 rounded-lg text-sm"
+                        >
+                          <option value="left">Align Left</option>
+                          <option value="center">Align Center</option>
+                          <option value="right">Align Right</option>
+                          <option value="justify">Justify</option>
+                        </select>
+                        <label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 cursor-pointer bg-white dark:bg-gray-600 px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg">
+                          <input
+                            {...register('descriptionBold')}
+                            type="checkbox"
+                            className="text-teal-600 focus:ring-teal-500 rounded"
+                          />
+                          Bold
+                        </label>
+                        <input
+                          {...register('descriptionColor')}
+                          type="color"
+                          className="w-full h-10 rounded-lg cursor-pointer border border-gray-300 dark:border-gray-500"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -522,18 +707,6 @@ const CardCreator = () => {
                             {fontOptions.map(font => (
                               <option key={font.value} value={font.value}>{font.name}</option>
                             ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
-                            Title Layout
-                          </label>
-                          <select
-                            {...register('titleLayout')}
-                            className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg"
-                          >
-                            <option value="inline">Inline (Title + Subtitle)</option>
-                            <option value="stacked">Stacked (Subtitle below)</option>
                           </select>
                         </div>
                       </div>
@@ -784,20 +957,20 @@ const CardCreator = () => {
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
-            className="xl:col-span-1"
+            className="xl:col-span-1 order-1 xl:order-2"
           >
-            <div className="sticky top-8">
-              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-teal-200/50 dark:border-teal-700/50 overflow-hidden">
+            <div className="sticky top-4 sm:top-8">
+              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl sm:rounded-2xl shadow-2xl border border-teal-200/50 dark:border-teal-700/50 overflow-hidden">
                 {/* Preview Header */}
-                <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-6 text-white">
-                  <h2 className="text-2xl font-bold flex items-center gap-3">
+                <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-4 sm:p-6 text-white">
+                  <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2 sm:gap-3">
                     <span>👁️</span>
                     Live Preview
                   </h2>
-                  <p className="text-teal-100 mt-1">Real-time updates as you design</p>
+                  <p className="text-teal-100 mt-1 text-sm sm:text-base">Real-time updates as you design</p>
                 </div>
 
-                <div className="p-6">
+                <div className="p-3 sm:p-6">
                   {previewCard ? (
                     <PreviewCard 
                       card={previewCard} 

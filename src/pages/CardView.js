@@ -70,7 +70,7 @@ const CardView = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center justify-center p-2 sm:p-4">
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 opacity-50"></div>
       
@@ -79,7 +79,7 @@ const CardView = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-xl relative z-10 px-1 sm:px-4"
       >
         <PreviewCard card={card} />
       </motion.div>
@@ -89,13 +89,13 @@ const CardView = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.5 }}
-        className="mt-8 relative z-10"
+        className="mt-6 sm:mt-8 relative z-10 px-4 w-full sm:w-auto"
       >
         <a
           href="https://itacospecialty.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center px-8 py-3 bg-teal-600 hover:bg-teal-700 dark:bg-teal-600 dark:hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+          className="w-full sm:w-auto inline-flex items-center justify-center px-6 sm:px-8 py-3 bg-teal-600 hover:bg-teal-700 dark:bg-teal-600 dark:hover:bg-teal-700 text-white font-semibold rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl text-sm sm:text-base"
         >
           Visit <span className="font-bold text-gold-300">ITACOSPECIALTY</span>
           <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +109,7 @@ const CardView = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="mt-12 text-center text-sm text-gray-600 dark:text-gray-400"
+        className="mt-8 sm:mt-12 text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400 px-4"
       >
         <p>Card shared via <span className="font-semibold text-teal-700 dark:text-gold-300">BTK Cards</span> • <span className="font-bold text-teal-700 dark:text-gold-300">ITACOSPECIALTY</span></p>
       </motion.div>

@@ -5,7 +5,12 @@ const { uploadImage, deleteImage, isSupabaseUrl } = require('../services/supabas
 // Create new card
 exports.createCard = async (req, res) => {
   try {
-    const { title, content, backgroundColor, textColor, buttonColor, fontFamily, titleFont, subtitleFont, titleLayout } = req.body;
+    const { 
+      title, subtitle, content, backgroundColor, textColor, buttonColor, fontFamily, 
+      titleFont, subtitleFont, titleLayout, titleLines, subtitleSize,
+      titleBold, subtitleBold,
+      description, descriptionFont, descriptionSize, descriptionColor, descriptionAlign, descriptionBold
+    } = req.body;
     
     let imageUrl = '';
     if (req.file) {
@@ -21,6 +26,7 @@ exports.createCard = async (req, res) => {
 
     const card = new Card({
       title,
+      subtitle: subtitle || '',
       content,
       imageUrl,
       backgroundColor,
@@ -30,6 +36,16 @@ exports.createCard = async (req, res) => {
       titleFont: titleFont || 'Inter',
       subtitleFont: subtitleFont || 'Inter',
       titleLayout: titleLayout || 'inline',
+      titleLines: titleLines || '3',
+      titleBold: titleBold === 'true' || titleBold === true,
+      subtitleSize: subtitleSize || 'xl',
+      subtitleBold: subtitleBold === 'true' || subtitleBold === true,
+      description: description || '',
+      descriptionFont: descriptionFont || 'Inter',
+      descriptionSize: descriptionSize || 'base',
+      descriptionColor: descriptionColor || textColor || '#000000',
+      descriptionAlign: descriptionAlign || 'left',
+      descriptionBold: descriptionBold === 'true' || descriptionBold === true,
       createdBy: req.user._id,
       shortCode: shortid.generate()
     });
@@ -127,7 +143,12 @@ exports.updateCard = async (req, res) => {
 
     Object.keys(updates).forEach(key => {
       if (updates[key] !== undefined) {
-        card[key] = updates[key];
+        // Handle boolean conversions for updates
+        if (['titleBold', 'subtitleBold', 'descriptionBold'].includes(key)) {
+          card[key] = updates[key] === 'true' || updates[key] === true;
+        } else {
+          card[key] = updates[key];
+        }
       }
     });
 
