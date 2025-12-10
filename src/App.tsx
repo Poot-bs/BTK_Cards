@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { ToastProvider } from './components/UI/ToastProvider';
@@ -16,13 +16,14 @@ import CardView from './pages/CardView';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 
-function App() {
+// Component to conditionally render header
+const AppContent = () => {
+  const location = useLocation();
+  const isCardViewPage = location.pathname.startsWith('/card/');
+
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <div className="App bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors duration-200">
-            <Header />
+    <div className="App bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors duration-200">
+      {!isCardViewPage && <Header />}
             <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -61,7 +62,16 @@ function App() {
             }
           />
         </Routes>
-          </div>
+    </div>
+  );
+};
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AuthProvider>
+        <ToastProvider>
+          <AppContent />
         </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
