@@ -1,6 +1,6 @@
 // Use environment variable if available, otherwise fallback to production URL
-// IMPORTANT: Update this URL after deploying your backend to Render
-const BASE_URL = process.env.REACT_APP_API_URL || 'https://btk-cards-backend.onrender.com/api';
+// Backend deployed on Render
+const BASE_URL = process.env.REACT_APP_API_URL || 'https://btk-cards.onrender.com/api';
 
 export const API_CONFIG = {
   BASE_URL: BASE_URL,
